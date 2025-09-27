@@ -1,0 +1,54 @@
+﻿@model WebApplication1.ViewModels.ProductionLineFormViewModel
+
+@{
+    ViewData["Title"] = "Tambah Lini Produksi";
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show custom-alert" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        <strong>Berhasil!</strong> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="content-header">
+    <div class="page-title">
+        <h1><i class="fas fa-industry me-2"></i>Tambah Lini Produksi</h1>
+        <p class="text-muted">Silahkan tambah lini produksi !</p>
+    </div>
+</div>
+
+<div class="content-card">
+    <div class="card-body p-4">
+<form asp-action="AddProductionLine" method="post">
+            @Html.AntiForgeryToken()
+            <div class="mb-4">
+                <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+            <div class="mb-4">
+        <label asp-for="BusinessUnitId"></label>
+                <select asp-for="BusinessUnitId" asp-items="Model.BusinessUnits" class="form-select">
+            <option value="">-- Pilih Unit Bisnis --</option>
+        </select>
+                <span asp-validation-for="BusinessUnitId" class="text-danger d-block mt-1"></span>
+    </div>
+
+            <div class="mt-4 d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-paper-plane me-2"></i>Tambah
+                </button>
+            </div>
+</form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

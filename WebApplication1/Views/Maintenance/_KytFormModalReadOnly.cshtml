@@ -1,0 +1,126 @@
+﻿@model WebApplication1.ViewModels.KYTFormViewModel
+
+<div class="content-header">
+    <div class="page-title">
+        <h1><i class="fas fa-clipboard-check me-3"></i>Daftar KYT Menunggu Persetujuan</h1>
+        <p class="text-muted">Review dan proses KYT yang telah diajukan.</p>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <label class="form-label">Mesin</label>
+        <input type="text" class="form-control" value="@Model.MachineName" readonly />
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Lini Produksi</label>
+        <input type="text" class="form-control" value="@Model.ProductionLineName" readonly />
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Deskripsi Kerusakan</label>
+        <textarea class="form-control" rows="3" readonly>@Model.DamageDescription</textarea>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Pelapor</label>
+        <input type="text" class="form-control" value="@Model.ReporterName" readonly />
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Pengisi KYT</label>
+        <input type="text" class="form-control" value="@Model.FilledByName" readonly />
+    </div>
+    <hr class="my-4">
+    <div class="col-12">
+        <label class="form-label">Teknisi yang Ditugaskan</label>
+        <ul class="list-group">
+            @foreach (var techName in Model.TechnicianNames)
+            {
+                <li class="list-group-item">@techName</li>
+            }
+        </ul>
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Analisis Kerusakan</label>
+        <textarea class="form-control" rows="3" readonly>@Model.Analysis</textarea>
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Tindakan yang Diperlukan</label>
+        <textarea class="form-control" rows="3" readonly>@Model.Action</textarea>
+    </div>
+    <hr class="my-4">
+    <div class="col-12">
+        <h4>Dangerous Mode</h4>
+        <div class="d-flex flex-wrap gap-3">
+            @{
+                var dangerousOptions = new Dictionary<int, string>
+                        {
+                        {1, "Tertabrak / Terjatuh"},
+                        {2, "Sengatan Listrik"},
+                        {4, "Terpental"},
+                        {8, "Benda Berat 1"},
+                        {16, "Benda Berat 2"},
+                        {32, "Kandungan Kimia"},
+                        {64, "Terjepit / Terlilit"}
+                        };
+            }
+            @foreach (var option in dangerousOptions)
+            {
+                bool isChecked = (Model.DangerousMode & option.Key) != 0;
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" checked="@isChecked" disabled />
+                    <label class="form-check-label">@option.Value</label>
+                </div>
+            }
+        </div>
+    </div>
+    <hr class="my-4">
+    <div class="col-12"><h4>Prepare</h4></div>
+    <div class="col-md-4">
+        <label class="form-label">Process</label>
+        <textarea class="form-control" rows="3" readonly>@Model.PrepareProcess</textarea>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Danger Prediction</label>
+        <textarea class="form-control" rows="3" readonly>@Model.PreparePrediction</textarea>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Tindakan Pengendalian</label>
+        <textarea class="form-control" rows="3" readonly>@Model.PrepareControl</textarea>
+    </div>
+    <hr class="my-4">
+    <div class="col-12"><h4>Main</h4></div>
+    <div class="col-md-4">
+        <label class="form-label">Process</label>
+        <textarea class="form-control" rows="3" readonly>@Model.MainProcess</textarea>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Danger Prediction</label>
+        <textarea class="form-control" rows="3" readonly>@Model.MainPrediction</textarea>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Tindakan Pengendalian</label>
+        <textarea class="form-control" rows="3" readonly>@Model.MainControl</textarea>
+    </div>
+    <hr class="my-4">
+    <div class="col-12"><h4>Confirm</h4></div>
+    <div class="col-md-4">
+        <label class="form-label">Process</label>
+        <textarea class="form-control" rows="3" readonly>@Model.ConfirmProcess</textarea>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Danger Prediction</label>
+        <textarea class="form-control" rows="3" readonly>@Model.ConfirmPrediction</textarea>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Tindakan Pengendalian</label>
+        <textarea class="form-control" rows="3" readonly>@Model.ConfirmControl</textarea>
+    </div>
+</div>
+
+<div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+    <form asp-action="ApproveKyt" asp-controller="Maintenance" method="post" class="me-2">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="kytId" value="@Model.KytId" />
+        <button type="submit" class="btn btn-success px-4">Approve</button>
+    </form>
+    <button type="button" class="btn btn-danger px-4" id="rejectKytBtn" data-kyt-id="@Model.KytId" data-creator-name="@Model.FilledByName">Reject</button>
+</div>

@@ -1,0 +1,264 @@
+﻿@model List<WebApplication1.ViewModels.PendingKYTApprovalViewModel>
+
+@{
+    ViewData["Title"] = "Persetujuan KYT";
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show custom-alert" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        <strong>Berhasil!</strong> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show custom-alert" role="alert">
+        <i class="fas fa-times-circle me-2"></i>
+        <strong>Gagal!</strong> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["Warning"] != null)
+{
+    <div class="alert alert-warning alert-dismissible fade show custom-alert" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <strong>Peringatan!</strong> @TempData["Warning"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="content-card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-list me-2"></i>Menunggu Persetujuan Manajer</h5>
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" class="form-control" placeholder="Cari pembuat, mesin, atau pelapor..." />
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table custom-table" id="kytReviewTable">
+            <thead>
+                <tr>
+                    <th><i class="fas fa-user-cog me-2"></i>Pembuat KYT</th>
+                    <th><i class="fas fa-cogs me-2"></i>Detail Mesin</th>
+                    <th><i class="fas fa-calendar-plus me-2"></i>Tanggal Dibuat</th>
+                    <th><i class="fas fa-user-tag me-2"></i>Pelapor Kerusakan</th>
+                    <th class="text-center"><i class="fas fa-wrench me-2"></i>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="align-middle">@item.CreatorName</td>
+                            <td class="align-middle">
+                                <div class="machine-info">
+                                    <span class="machine-name">@item.MachineName</span>
+                                    <span class="machine-code text-muted">ID KYT: @item.KytId</span>
+                                </div>
+                            </td>
+                            <td class="align-middle">
+                                <div class="date-info">
+                                    <span class="date">@item.CreatedAt.ToString("dd MMM yyyy")</span>
+                                    <span class="time">@item.CreatedAt.ToString("HH:mm") WIB</span>
+                                </div>
+                            </td>
+                            <td class="align-middle">@item.ReporterName</td>
+                            <td class="text-center align-middle">
+                                <button class="btn btn-primary btn-sm view-kyt-btn"
+                                        data-kyt-id="@item.KytId"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#kytReviewModal">
+                                    <i class="fas fa-search-plus me-1"></i> Lihat & Proses
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5" class="text-center p-4">
+                            Tidak ada KYT yang menunggu persetujuan saat ini.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Footer Kartu dengan Info Paginasi -->
+    @if (Model.Any())
+    {
+        <div class="card-footer">
+            <div class="pagination-info">Menampilkan @Model.Count() data</div>
+        </div>
+    }
+</div>
+
+<!-- Modal untuk Review KYT -->
+<div class="modal fade custom-modal" id="kytReviewModal" tabindex="-1" aria-labelledby="kytReviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="kytReviewModalLabel"><i class="fas fa-file-alt me-2"></i>Detail dan Persetujuan KYT</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="kytReviewModalBody">
+                <div class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Memuat...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-2"></i>Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal untuk Menolak KYT -->
+<div class="modal fade custom-modal" id="rejectKytModal" tabindex="-1" aria-labelledby="rejectKytModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="RejectKyt" asp-controller="Maintenance" method="post" id="rejectKytForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="KytId" id="rejectKytId" />
+
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="rejectKytModalLabel"><i class="fas fa-times-circle me-2"></i>Tolak KYT</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Anda akan menolak KYT yang dibuat oleh: <strong id="rejectionKytCreatorName"></strong></p>
+                    <div class="mb-3">
+                        <label for="rejectionKytReason" class="form-label">Alasan Penolakan</label>
+                        <textarea name="RejectionReason" id="rejectionKytReason" class="form-control" rows="4" required placeholder="Masukkan alasan mengapa KYT ini ditolak..." maxlength="500"></textarea>
+                        <div class="form-text">Alasan ini akan dikirim ke Leader Maintenance yang membuat KYT.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-danger">Tolak KYT</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <!-- Skrip untuk fungsionalitas pencarian -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                const table = document.getElementById('kytReviewTable');
+                const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+                const noDataRow = table.querySelector('tbody td[colspan]');
+
+                searchInput.addEventListener('keyup', function () {
+                    const filter = searchInput.value.toLowerCase();
+                    let visibleRows = 0;
+                    for (let i = 0; i < rows.length; i++) {
+                        // Jangan proses baris "tidak ada data"
+                        if (rows[i].getElementsByTagName('td').length <= 1) continue;
+
+                        const rowText = rows[i].textContent || rows[i].innerText;
+                        if (rowText.toLowerCase().indexOf(filter) > -1) {
+                            rows[i].style.display = "";
+                            visibleRows++;
+                        } else {
+                            rows[i].style.display = "none";
+                        }
+                    }
+
+                    // Tampilkan atau sembunyikan pesan "tidak ada data" jika ada
+                    if (noDataRow) {
+                        if(visibleRows === 0 && rows.length > 1){
+                            // Jika pencarian tidak menemukan hasil, kita bisa tampilkan pesan khusus (opsional)
+                            // Untuk saat ini, kita biarkan kosong saja.
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+
+    <!-- Skrip AJAX untuk memuat modal dan menangani penolakan -->
+    <script>
+        $(document).ready(function () {
+            const kytReviewModalEl = document.getElementById('kytReviewModal');
+            const kytReviewModalBody = $('#kytReviewModalBody');
+            const initialModalContent = kytReviewModalBody.html(); 
+
+            // 1. Saat modal review AKAN DITAMPILKAN (event: show.bs.modal)
+            kytReviewModalEl.addEventListener('show.bs.modal', function (event) {
+                // Dapatkan tombol yang memicu modal
+                const button = event.relatedTarget;
+                const kytId = button.getAttribute('data-kyt-id');
+
+                // Pastikan modal body dalam keadaan loading setiap kali dibuka
+                kytReviewModalBody.html(initialModalContent);
+
+                // Panggil AJAX untuk mendapatkan data detail KYT
+                $.ajax({
+                    url: '@Url.Action("GetKytReviewData", "Maintenance")',
+                    type: 'GET',
+                    data: { kytId: kytId },
+                    success: function (data) {
+                        // Muat konten yang diterima dari server ke dalam modal body
+                        kytReviewModalBody.html(data);
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        console.error("Error loading KYT data:", textStatus, errorThrown);
+                        kytReviewModalBody.html('<div class="alert alert-danger p-4"><i class="fas fa-times-circle me-2"></i>Gagal memuat data KYT. Silakan tutup dan coba lagi.</div>');
+                    }
+                });
+            });
+
+            // 2. Saat modal review SELESAI DITUTUP (event: hidden.bs.modal)
+            kytReviewModalEl.addEventListener('hidden.bs.modal', function (event) {
+                // Kembalikan modal body ke keadaan awal (spinner).
+                // Ini penting untuk membersihkan konten lama dan memastikan tidak ada state yang tertinggal.
+                kytReviewModalBody.html(initialModalContent);
+            });
+
+            // 3. Event handler untuk tombol 'Reject' di dalam modal review
+            // Menggunakan event delegation karena tombol ini dimuat via AJAX
+            $(document).on('click', '#rejectKytBtn', function () {
+                const kytId = $(this).data('kyt-id');
+                const creatorName = $(this).data('creator-name'); 
+
+                // Mengisi data ke modal penolakan
+                $('#rejectKytId').val(kytId);
+                $('#rejectionKytCreatorName').text(creatorName); 
+
+                // Dapatkan instance modal review yang sedang aktif dan sembunyikan
+                const reviewModalInstance = bootstrap.Modal.getInstance(kytReviewModalEl);
+                if (reviewModalInstance) {
+                    reviewModalInstance.hide();
+                }
+
+                // Dapatkan atau buat instance modal penolakan dan tampilkan
+                const rejectModalInstance = bootstrap.Modal.getOrCreateInstance(document.getElementById('rejectKytModal'));
+                rejectModalInstance.show();
+            });
+
+            // 4. Bersihkan modal penolakan saat ditutup
+            $('#rejectKytModal').on('hidden.bs.modal', function () {
+                const form = $(this).find('#rejectKytForm');
+                if (form.length) {
+                    form[0].reset();
+                }
+                $('#rejectionKytCreatorName').text(''); 
+            });
+        });
+    </script>
+}

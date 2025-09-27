@@ -1,0 +1,391 @@
+﻿@model List<WebApplication1.ViewModels.PendingApprovalViewModel>
+
+@{
+    ViewData["Title"] = "Persetujuan Jadwal Perbaikan";
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show custom-alert" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        <strong>Berhasil!</strong> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show custom-alert" role="alert">
+        <i class="fas fa-times-circle me-2"></i>
+        <strong>Gagal!</strong> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["Warning"] != null)
+{
+    <div class="alert alert-warning alert-dismissible fade show custom-alert" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <strong>Peringatan!</strong> @TempData["Warning"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="content-header">
+    <div class="page-title">
+        <h1><i class="fas fa-clipboard-check me-3"></i>Persetujuan Jadwal Perbaikan</h1>
+        <p class="text-muted">Pastikan mengisi form KYT dengan baik dan benar!</p>
+    </div>
+</div>
+
+<div class="content-card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-list me-2"></i>Daftar Jadwal Menunggu Persetujuan</h5>
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" class="form-control" placeholder="Cari mesin, pelapor, atau deskripsi..." />
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table custom-table table-hover align-middle" id="approvalTable">
+            <thead>
+                <tr>
+                    <th><i class="fas fa-calendar-alt me-2"></i>Tgl. Jadwal</th>
+                    <th><i class="fas fa-cogs me-2"></i>Mesin & Lini</th>
+                    <th><i class="fas fa-comment-alt me-2"></i>Deskripsi Kerusakan</th>
+                    <th><i class="fas fa-user-tag me-2"></i>Pelapor</th>
+                    <th><i class="fas fa-file-alt me-2"></i>Deskripsi Jadwal</th>
+                    <th><i class="fas fa-calendar-day me-2"></i>Tgl. Laporan</th>
+                    <th class="text-center"><i class="fas fa-wrench me-2"></i>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    @foreach (var item in Model)
+                    {
+                        <tr id="row-@item.ScheduleId">
+                            <td>
+                                <div class="date-info">
+                                    <span class="date">@(item.ScheduleDate?.ToString("dd-MM-yyyy") ?? "-")</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="machine-info">
+                                    <span class="machine-name">@item.MachineName</span>
+                                    <span class="machine-code">@item.ProductionLineName</span>
+                                </div>
+                            </td>
+                            <td>@item.DamageDescription</td>
+                            <td>@item.ReporterName</td>
+                            <td>@item.ScheduleDescription</td>
+                            <td>
+                                <div class="date-info">
+                                    <span class="date">@item.ReportDate.ToString("dd-MM-yyyy")</span>
+                                    <span class="time">@item.ReportDate.ToString("HH:mm")</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex flex-column align-items-center gap-2">
+                                    <button class="btn btn-primary btn-sm w-100 view-kyt-btn"
+                                            data-schedule-id="@item.ScheduleId"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#kytModal">
+                                        <i class="fas fa-eye me-1"></i> Lihat & Setujui
+                                    </button>
+                                    <button class="btn btn-danger btn-sm w-100 reject-btn"
+                                            data-schedule-id="@item.ScheduleId"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#rejectModal">
+                                        <i class="fas fa-times me-1"></i> Tolak
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7" class="text-center p-4">Tidak ada jadwal yang menunggu persetujuan untuk Unit Bisnis Anda.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="card-footer">
+            <div class="pagination-info">Menampilkan @Model.Count data</div>
+        </div>
+    }
+</div>
+
+<!-- Modal KYT -->
+<div class="modal fade custom-modal" id="kytModal" tabindex="-1" aria-labelledby="kytModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="kytModalLabel">Kiken Yochi Training (KYT) - Persetujuan Perbaikan</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="kyt-form-loading" class="text-center" style="display: none;">
+                    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Memuat data...</p>
+                </div>
+                <div id="kyt-form-error" class="alert alert-danger" style="display: none;"></div>
+                <div id="kyt-form-container" style="display:none;">
+                    @await Html.PartialAsync("_KytFormModal", new WebApplication1.ViewModels.KYTFormViewModel())
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Tolak -->
+<div class="modal fade custom-modal" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" id="rejectModalContent">
+            <!-- Konten dimuat via AJAX -->
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <!-- Skrip untuk fungsionalitas pencarian -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                const table = document.getElementById('approvalTable');
+                const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+
+                searchInput.addEventListener('keyup', function () {
+                    const filter = searchInput.value.toLowerCase();
+                    for (let i = 0; i < rows.length; i++) {
+                        if (rows[i].getElementsByTagName('td').length <= 1) continue;
+
+                        const rowText = rows[i].textContent || rows[i].innerText;
+                        if (rowText.toLowerCase().indexOf(filter) > -1) {
+                            rows[i].style.display = "";
+                        } else {
+                            rows[i].style.display = "none";
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+
+    <!-- Skrip untuk logika Modal KYT dan Tolak -->
+    <script>
+        $(document).ready(function () {
+            // === VARIABEL GLOBAL UNTUK MODAL KYT ===
+            const kytModalElement = document.getElementById('kytModal');
+            const formContainer = $('#kyt-form-container');
+            const formLoading = $('#kyt-form-loading');
+            const formError = $('#kyt-form-error');
+            const kytForm = $('#kytForm');
+            const addedTechniciansList = $('#addedTechniciansList');
+            const technicianIdsContainer = $('#technicianIdsContainer');
+            const noTechnicianMsg = $('#noTechnicianSelectedMsg');
+            const addTechnicianBtn = $('#addTechnicianBtn');
+            const techSelect = $('#availableTechniciansSelect');
+            const dangerousSumInput = $('#kyt_dangerous_sum');
+
+            // === FUNGSI BANTU ===
+            function updateAddedTechniciansView() {
+                if (technicianIdsContainer.find('input').length > 0) {
+                    noTechnicianMsg.hide();
+                } else {
+                    noTechnicianMsg.show();
+                }
+            }
+
+            function calculateDangerousSum() {
+                let sum = 0;
+                $('.danger-checkbox:checked').each(function() {
+                    sum += parseInt($(this).val());
+                });
+                dangerousSumInput.val(sum);
+                // Memicu validasi ulang untuk field terkait
+                dangerousSumInput.trigger('change');
+            }
+
+            // === EVENT HANDLER: MEMBUKA MODAL & MEMUAT DATA KYT ===
+            $('.view-kyt-btn').on('click', function () {
+                const scheduleId = $(this).data('schedule-id');
+
+                formLoading.show();
+                formContainer.hide();
+                formError.hide().text('');
+
+                $.ajax({
+                    url: '@Url.Action("GetKytFormData", "Maintenance")',
+                    type: 'GET',
+                    data: { scheduleId: scheduleId },
+                    success: function (data) {
+                        // Mengisi form dengan data yang diterima
+                        $('#kyt_schedule_id').val(data.scheduleId);
+                        $('#kyt_machine_name').val(data.machineName);
+                        $('#kyt_lini_name').val(data.productionLineName);
+                        $('#kyt_description').val(data.damageDescription);
+                        $('#kyt_reporter_name').val(data.reporterName);
+                        $('#kyt_filled_by_name').val(data.filledByName);
+
+                        // Mengisi dropdown teknisi
+                        techSelect.empty().append('<option value="" selected disabled>--- Pilih Teknisi ---</option>');
+                        if (data.availableTechnicians && data.availableTechnicians.length > 0) {
+                            $.each(data.availableTechnicians, function (i, tech) {
+                                techSelect.append(new Option(tech.text, tech.value));
+                            });
+                        }
+
+                        formLoading.hide();
+                        formContainer.show();
+                    },
+                    error: function (jqXHR) {
+                        let errorMsg = "Gagal memuat data KYT. Silakan coba lagi.";
+                        if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
+                            errorMsg = jqXHR.responseJSON.message;
+                        }
+                        formError.text(errorMsg).show();
+                        formLoading.hide();
+                    }
+                });
+            });
+
+            // === EVENT HANDLER: MANAJEMEN TEKNISI ===
+            addTechnicianBtn.on('click', function () {
+                const selectedOption = techSelect.find('option:selected');
+                const techId = selectedOption.val();
+                const techName = selectedOption.text();
+
+                if (!techId) return; // Jangan lakukan apa-apa jika tidak ada yang dipilih
+
+                // Cek duplikasi
+                if ($(`#tech_hidden_${techId}`).length > 0) {
+                    alert('Teknisi sudah ditambahkan.');
+                    return;
+                }
+
+                // Tambah hidden input untuk form submission
+                technicianIdsContainer.append(`<input type="hidden" name="TechnicianIds" id="tech_hidden_${techId}" value="${techId}" />`);
+
+                // Tambah item ke daftar visual
+                const listItem = `
+                    <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" id="tech_item_${techId}">
+                        ${techName}
+                        <button type="button" class="btn btn-outline-danger btn-sm remove-technician-btn" data-tech-id="${techId}">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>`;
+                addedTechniciansList.append(listItem);
+                updateAddedTechniciansView();
+                techSelect.val(''); // Reset dropdown
+            });
+
+            addedTechniciansList.on('click', '.remove-technician-btn', function () {
+                const techId = $(this).data('tech-id');
+                $(`#tech_hidden_${techId}`).remove();
+                $(`#tech_item_${techId}`).remove();
+                updateAddedTechniciansView();
+            });
+
+            // === EVENT HANDLER: DANGEROUS MODE CHECKBOX ===
+             $('.danger-checkbox').on('change', function() {
+                calculateDangerousSum();
+            });
+
+            // === EVENT HANDLER: SUBMIT FORM KYT ===
+            kytForm.on('submit', function (e) {
+                e.preventDefault();
+                calculateDangerousSum(); // Pastikan nilai terakhir dihitung sebelum submit
+
+                // Validasi teknisi secara manual
+                if (technicianIdsContainer.find('input').length === 0) {
+                    // Tampilkan pesan error di dekat validasi teknisi
+                    $('span[data-valmsg-for="TechnicianIds"]').text('Setidaknya satu teknisi wajib dipilih.').show();
+                    return;
+                } else {
+                     $('span[data-valmsg-for="TechnicianIds"]').text('').hide();
+                }
+
+                if (!$(this).valid()) {
+                    return;
+                }
+
+                const submitButton = $(this).find('button[type="submit"]');
+                submitButton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Menyimpan...');
+
+                $.ajax({
+                    url: $(this).attr('action'),
+                    type: 'POST',
+                    data: $(this).serialize(),
+                    success: function (response) {
+                        window.location.reload();
+                    },
+                    error: function (jqXHR) {
+                        let errorMsg = "Terjadi kesalahan saat menyimpan data.";
+                         if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
+                             errorMsg = jqXHR.responseJSON.message;
+                         }
+                        formError.text(errorMsg).show();
+                    },
+                    complete: function () {
+                        submitButton.prop('disabled', false).html('Simpan & Setujui');
+                    }
+                });
+            });
+
+            // === EVENT HANDLER: MODAL TOLAK ===
+            $('.reject-btn').on('click', function() {
+                 const scheduleId = $(this).data('schedule-id');
+                 const url = `/Maintenance/GetRejectReasonForm?scheduleId=${scheduleId}`;
+                 $('#rejectModalContent').load(url, function(response, status, xhr) {
+                     if (status == "error") {
+                        $('#rejectModalContent').html('<div class="modal-body"><p>Gagal memuat konten. Silakan coba lagi.</p></div>');
+                     }
+                 });
+            });
+
+            // === EVENT HANDLER: RESET MODAL SAAT DITUTUP ===
+             $('#rejectModal').on('hidden.bs.modal', function() {
+                 $('#rejectModalContent').empty();
+             });
+
+             kytModalElement.addEventListener('hidden.bs.modal', function () {
+                // Reset semua field form ke kondisi awal
+                kytForm[0].reset();
+
+                // Hapus semua teknisi yang telah ditambahkan
+                technicianIdsContainer.empty();
+                addedTechniciansList.find('.list-group-item').remove();
+                updateAddedTechniciansView();
+
+                // Reset checkbox dangerous mode
+                $('.danger-checkbox').prop('checked', false);
+                dangerousSumInput.val(0);
+
+                // Sembunyikan pesan error
+                formError.hide().text('');
+                $('.validation-summary-errors').html('');
+                $('.text-danger').text('');
+
+                // Tampilkan loading spinner lagi untuk persiapan pembukaan selanjutnya
+                formContainer.hide();
+                formLoading.show();
+             });
+        });
+    </script>
+}

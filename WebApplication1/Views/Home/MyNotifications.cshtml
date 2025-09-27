@@ -1,0 +1,317 @@
+﻿@model List<WebApplication1.Models.Notification>
+
+@{
+    ViewData["Title"] = "Notifikasi";
+}
+
+<div class="content-header">
+    <div class="page-title">
+        <h1><i class="fas fa-bell me-3"></i>Notifikasi Saya</h1>
+        <p class="text-muted">Kelola dan pantau semua notifikasi Anda, @User.Identity.Name</p>
+    </div>
+    <div class="header-actions">
+        <button class="btn btn-outline-primary btn-sm" id="markAllReadBtn">
+            <i class="fas fa-check-double me-2"></i>Tandai Semua Terbaca
+        </button>
+        <button class="btn btn-outline-danger btn-sm" id="clearAllBtn">
+            <i class="fas fa-trash-alt me-2"></i>Hapus Semua
+        </button>
+    </div>
+</div>
+
+<div class="content-card">
+    @Html.AntiForgeryToken()
+    <div class="card-header">
+        <h5><i class="fas fa-inbox me-2"></i>Daftar Notifikasi</h5>
+        <div class="notification-stats">
+            <span class="badge bg-primary me-2">
+                <i class="fas fa-envelope me-1"></i>Total: @Model.Count()
+            </span>
+            <span class="badge bg-warning">
+                <i class="fas fa-exclamation-circle me-1"></i>Belum Dibaca: @Model.Count(n => !n.IsRead)
+            </span>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-bell-slash"></i>
+            </div>
+            <h4>Tidak Ada Notifikasi</h4>
+            <p class="text-muted">Anda tidak memiliki notifikasi saat ini. Notifikasi baru akan muncul di sini.</p>
+        </div>
+    }
+    else
+    {
+        <div class="notifications-container">
+            @foreach (var notification in Model.OrderByDescending(n => n.CreatedAt))
+            {
+                <div class="notification-item @(notification.IsRead ? "read" : "unread")" data-notification-id="@notification.NotificationId">
+                    <div class="notification-icon">
+                        @if (notification.Type == "Error" || notification.Type == "Danger")
+                        {
+                            <i class="fas fa-exclamation-triangle text-danger"></i>
+                        }
+                        else if (notification.Type == "Warning")
+                        {
+                            <i class="fas fa-exclamation-circle text-warning"></i>
+                        }
+                        else if (notification.Type == "Success")
+                        {
+                            <i class="fas fa-check-circle text-success"></i>
+                        }
+                        else if (notification.Type == "Info")
+                        {
+                            <i class="fas fa-info-circle text-info"></i>
+                        }
+                        else
+                        {
+                            <i class="fas fa-bell text-primary"></i>
+                        }
+                    </div>
+
+                    <div class="notification-content">
+                        <div class="notification-header">
+                            <div class="notification-title">
+                                @if (!notification.IsRead)
+                                {
+                                    <span class="unread-indicator"></span>
+                                }
+                                <strong>@(notification.Title ?? "Notifikasi Sistem")</strong>
+                            </div>
+                            <div class="notification-meta">
+                                <span class="notification-time">
+                                    <i class="fas fa-clock me-1"></i>
+                                    @GetTimeAgo(notification.CreatedAt)
+                                </span>
+                                <div class="notification-actions">
+                                    @if (!notification.IsRead)
+                                    {
+                                        <button class="btn btn-sm btn-outline-primary mark-read-btn" title="Tandai sebagai terbaca">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    }
+                                    <button class="btn btn-sm btn-outline-danger delete-btn" title="Hapus notifikasi">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="notification-message">
+                            @notification.Message
+                        </div>
+                        @if (!string.IsNullOrEmpty(notification.ActionUrl))
+                        {
+                            <div class="notification-action">
+                                <a href="@notification.ActionUrl" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-external-link-alt me-1"></i>Lihat Detail
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="card-footer">
+            <div class="pagination-info">
+                Menampilkan @Model.Count() notifikasi
+            </div>
+            <div class="footer-actions">
+                <button class="btn btn-sm btn-outline-secondary" id="refreshBtn">
+                    <i class="fas fa-sync-alt me-1"></i>Refresh
+                </button>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            const token = $('input[name="__RequestVerificationToken"]').val();
+
+            // Mark single notification as read
+            $('.notifications-container').on('click', '.mark-read-btn', function(e) {
+                e.preventDefault();
+                const $btn = $(this);
+                const $notification = $btn.closest('.notification-item');
+                const notificationId = $notification.data('notification-id');
+
+                $.ajax({
+                    url: '@Url.Action("MarkAsRead", "Home")',
+                    type: 'POST',
+                    data: {
+                        id: notificationId,
+                        __RequestVerificationToken: token
+                    },
+                    beforeSend: function() {
+                        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $notification.removeClass('unread').addClass('read');
+                            $notification.find('.unread-indicator').remove();
+                            $btn.remove();
+                            updateNotificationStats();
+                        } else {
+                            alert('Gagal menandai notifikasi. Silakan coba lagi.');
+                            $btn.prop('disabled', false).html('<i class="fas fa-check"></i>');
+                        }
+                    },
+                    error: function() {
+                        alert('Terjadi kesalahan koneksi. Silakan coba lagi.');
+                        $btn.prop('disabled', false).html('<i class="fas fa-check"></i>');
+                    }
+                });
+            });
+
+            // Delete single notification
+            $('.notifications-container').on('click', '.delete-btn', function(e) {
+                e.preventDefault();
+                const $btn = $(this);
+                const $notification = $btn.closest('.notification-item');
+                const notificationId = $notification.data('notification-id');
+
+                $.ajax({
+                    url: '@Url.Action("DeleteNotification", "Home")',
+                    type: 'POST',
+                    data: {
+                        id: notificationId,
+                        __RequestVerificationToken: token
+                    },
+                    beforeSend: function() {
+                        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $notification.fadeOut(300, function() {
+                                $(this).remove();
+                                updateNotificationStats();
+                                checkEmptyState();
+                            });
+                        } else {
+                            alert('Gagal menghapus notifikasi. Silakan coba lagi.');
+                             $btn.prop('disabled', false).html('<i class="fas fa-times"></i>');
+                        }
+                    },
+                    error: function() {
+                        alert('Terjadi kesalahan koneksi. Silakan coba lagi.');
+                        $btn.prop('disabled', false).html('<i class="fas fa-times"></i>');
+                    }
+                });
+            });
+
+            // Mark all as read
+            $('#markAllReadBtn').on('click', function(e) {
+                e.preventDefault();
+                const $btn = $(this);
+
+                $.ajax({
+                    url: '@Url.Action("MarkAllAsRead", "Home")',
+                    type: 'POST',
+                    data: { __RequestVerificationToken: token },
+                    beforeSend: function() {
+                        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Memproses...');
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $('.notification-item.unread').removeClass('unread').addClass('read');
+                            $('.unread-indicator').remove();
+                            $('.mark-read-btn').remove();
+                            updateNotificationStats();
+                        } else {
+                            alert('Gagal menandai semua notifikasi.');
+                        }
+                    },
+                    error: function() {
+                        alert('Terjadi kesalahan koneksi.');
+                    },
+                    complete: function() {
+                        $btn.prop('disabled', false).html('<i class="fas fa-check-double me-2"></i>Tandai Semua Terbaca');
+                    }
+                });
+            });
+
+            // Clear all notifications
+            $('#clearAllBtn').on('click', function(e) {
+                e.preventDefault();
+                const $btn = $(this);
+
+                $.ajax({
+                    url: '@Url.Action("DeleteAllNotifications", "Home")',
+                    type: 'POST',
+                    data: { __RequestVerificationToken: token },
+                    beforeSend: function() {
+                        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Menghapus...');
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $('.notifications-container').fadeOut(300, function() {
+                                $(this).empty();
+                                updateNotificationStats();
+                                checkEmptyState();
+                                $(this).show();
+                            });
+                        } else {
+                             alert('Gagal menghapus semua notifikasi.');
+                        }
+                    },
+                    error: function() {
+                        alert('Terjadi kesalahan koneksi.');
+                    },
+                    complete: function() {
+                        $btn.prop('disabled', false).html('<i class="fas fa-trash-alt me-2"></i>Hapus Semua');
+                    }
+                });
+            });
+
+            // Refresh notifications
+            $('#refreshBtn').on('click', function(e) {
+                e.preventDefault();
+                location.reload();
+            });
+
+            function updateNotificationStats() {
+                const total = $('.notification-item').length;
+                const unread = $('.notification-item.unread').length;
+
+                $('.notification-stats .bg-primary').html(`<i class="fas fa-envelope me-1"></i>Total: ${total}`);
+                $('.notification-stats .bg-warning').html(`<i class="fas fa-exclamation-circle me-1"></i>Belum Dibaca: ${unread}`);
+            }
+
+            function checkEmptyState() {
+                if ($('.notification-item').length === 0) {
+                    const emptyStateHtml = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                <i class="fas fa-bell-slash"></i>
+                            </div>
+                            <h4>Tidak Ada Notifikasi</h4>
+                            <p class="text-muted">Semua notifikasi telah dihapus atau Anda belum memiliki notifikasi.</p>
+                        </div>`;
+                    $('.notifications-container').html(emptyStateHtml);
+                    $('.card-footer').hide();
+                    $('.header-actions').hide();
+                }
+            }
+        });
+    </script>
+}
+
+@functions {
+    public static string GetTimeAgo(DateTime dateTime)
+    {
+        var timeSpan = DateTime.Now - dateTime;
+        if (timeSpan.TotalSeconds < 5) return "Baru saja";
+        if (timeSpan.TotalSeconds < 60) return $"{(int)timeSpan.TotalSeconds} detik lalu";
+        if (timeSpan.TotalMinutes < 60) return $"{(int)timeSpan.TotalMinutes} menit lalu";
+        if (timeSpan.TotalHours < 24) return $"{(int)timeSpan.TotalHours} jam lalu";
+        if (timeSpan.TotalDays < 7) return $"{(int)timeSpan.TotalDays} hari lalu";
+        if (timeSpan.TotalDays < 30) return $"{(int)(timeSpan.TotalDays / 7)} minggu lalu";
+        if (timeSpan.TotalDays < 365) return $"{(int)(timeSpan.TotalDays / 30)} bulan lalu";
+        return $"{(int)(timeSpan.TotalDays / 365)} tahun lalu";
+    }
+}

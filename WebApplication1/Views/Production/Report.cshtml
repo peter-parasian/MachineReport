@@ -1,0 +1,63 @@
+﻿@model WebApplication1.ViewModels.DamageReportViewModel
+
+@{
+    ViewData["Title"] = "Laporan Kerusakan Mesin";
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show custom-alert" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        <strong>Berhasil!</strong> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show custom-alert" role="alert">
+        <i class="fas fa-times-circle me-2"></i>
+        <strong>Gagal!</strong> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="content-header">
+    <div class="page-title">
+        <h1><i class="fas fa-tools me-3"></i>Laporan Kerusakan Mesin</h1>
+        <p class="text-muted">Sebelum melaporkan, pastikan tombol darurat dalam posisi ON.</p>
+    </div>
+</div>
+
+<div class="content-card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-edit me-2"></i>Formulir Laporan</h5>
+    </div>
+    <div class="card-body p-4">
+        <form asp-action="Report" method="post">
+            @Html.AntiForgeryToken()
+            <div class="mb-4">
+                <label asp-for="MachineId" class="form-label">Pilih Mesin</label>
+                <select asp-for="MachineId" class="form-select" asp-items="ViewBag.MachineList">
+                    <option value="">-- Pilih Mesin --</option>
+                </select>
+                <span asp-validation-for="MachineId" class="text-danger d-block mt-1"></span>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="Description" class="form-label">Deskripsi Kerusakan</label>
+                <textarea asp-for="Description" class="form-control" rows="5" placeholder="Jelaskan detail kerusakan yang terjadi..."></textarea>
+                <span asp-validation-for="Description" class="text-danger d-block mt-1"></span>
+            </div>
+
+            <div class="mt-4 d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-paper-plane me-2"></i>Kirim Laporan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

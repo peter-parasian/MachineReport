@@ -1,0 +1,131 @@
+﻿@{
+    ViewData["Title"] = "Beranda";
+}
+
+<div class="content-header">
+    <div class="page-title">
+        <h1><i class="fas fa-building me-2"></i>Selamat Datang di Sistem Pelaporan Kerusakaan Mesin PT Panasonic</h1>
+        @if (User.Identity.IsAuthenticated)
+        {
+            <p class="text-muted">Anda login sebagai: <strong>@User.Identity.Name</strong></p>
+        }
+        else
+        {
+            <p class="text-muted">Silakan login untuk mengakses fitur admin.</p>
+        }
+    </div>
+</div>
+
+<!-- Carousel Section -->
+<div class="content-card carousel-container">
+    <div class="card-header">
+        <h5><i class="fas fa-images me-2"></i>Galeri Fasilitas PT Panasonic</h5>
+        <div class="carousel-indicators-custom">
+            <span class="indicator-dot active" data-slide="0"></span>
+            <span class="indicator-dot" data-slide="1"></span>
+            <span class="indicator-dot" data-slide="2"></span>
+            <span class="indicator-dot" data-slide="3"></span>
+        </div>
+    </div>
+
+    <div id="panasonicCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="4000">
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <div class="carousel-image-container">
+                    <img src="https://images.unsplash.com/photo-1565814329452-e1efa11c5b89?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&h=500&q=80" class="d-block w-100 carousel-img" alt="Fasilitas Produksi">
+                    <div class="carousel-overlay"></div>
+                </div>
+                <div class="carousel-caption">
+                    <h5><i class="fas fa-industry me-2"></i>Fasilitas Produksi Modern</h5>
+                    <p>Teknologi manufaktur terdepan dengan standar kualitas internasional untuk menghasilkan produk elektronik berkualitas tinggi.</p>
+                </div>
+            </div>
+
+            <div class="carousel-item">
+                <div class="carousel-image-container">
+                    <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&h=500&q=80" class="d-block w-100 carousel-img" alt="Tim Maintenance">
+                    <div class="carousel-overlay"></div>
+                </div>
+                <div class="carousel-caption">
+                    <h5><i class="fas fa-tools me-2"></i>Tim Maintenance Profesional</h5>
+                    <p>Tim teknisi berpengalaman yang siap melakukan perawatan dan perbaikan mesin dengan respons cepat 24/7.</p>
+                </div>
+            </div>
+
+            <div class="carousel-item">
+                <div class="carousel-image-container">
+                    <img src="https://images.unsplash.com/photo-1518709268805-4e9042af2176?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&h=500&q=80" class="d-block w-100 carousel-img" alt="Quality Control">
+                    <div class="carousel-overlay"></div>
+                </div>
+                <div class="carousel-caption">
+                    <h5><i class="fas fa-clipboard-check me-2"></i>Quality Control</h5>
+                    <p>Sistem kontrol kualitas yang ketat untuk memastikan setiap produk memenuhi standar excellence Panasonic.</p>
+                </div>
+            </div>
+
+            <div class="carousel-item">
+                <div class="carousel-image-container">
+                    <img src="https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&h=500&q=80" class="d-block w-100 carousel-img" alt="Smart Factory">
+                    <div class="carousel-overlay"></div>
+                </div>
+                <div class="carousel-caption">
+                    <h5><i class="fas fa-microchip me-2"></i>Smart Factory Technology</h5>
+                    <p>Implementasi teknologi Industry 4.0 dengan sistem monitoring dan reporting otomatis untuk efisiensi maksimal.</p>
+                </div>
+            </div>
+        </div>
+
+        <button class="carousel-control-prev" type="button" data-bs-target="#panasonicCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true">
+                <i class="fas fa-chevron-left"></i>
+            </span>
+            <span class="visually-hidden">Sebelumnya</span>
+        </button>
+
+        <button class="carousel-control-next" type="button" data-bs-target="#panasonicCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true">
+                <i class="fas fa-chevron-right"></i>
+            </span>
+            <span class="visually-hidden">Selanjutnya</span>
+        </button>
+    </div>
+</div>
+
+<!-- Info Cards -->
+<div class="row mt-4">
+    <div class="col-md-4 mb-3">
+        <div class="content-card info-card">
+            <div class="card-body text-center">
+                <div class="info-icon">
+                    <i class="fas fa-cogs"></i>
+                </div>
+                <h5>Sistem Pelaporan</h5>
+                <p class="text-muted">Laporkan kerusakan mesin dengan mudah dan cepat melalui sistem digital terintegrasi.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="content-card info-card">
+            <div class="card-body text-center">
+                <div class="info-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <h5>Respons Cepat</h5>
+                <p class="text-muted">Tim maintenance siap memberikan respons dalam waktu kurang dari 30 menit.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="content-card info-card">
+            <div class="card-body text-center">
+                <div class="info-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h5>Monitoring Real-time</h5>
+                <p class="text-muted">Pantau status perbaikan dan jadwal maintenance secara real-time.</p>
+            </div>
+        </div>
+    </div>
+</div>

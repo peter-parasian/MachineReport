@@ -1,0 +1,196 @@
+﻿@model List<WebApplication1.ViewModels.DamageReportRejectionViewModel>
+
+@{
+    ViewData["Title"] = "Daftar Mesin Rusak";
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show custom-alert" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        <strong>Berhasil!</strong> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show custom-alert" role="alert" style="border-left-color: var(--danger-color); background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%); color: #721c24;">
+        <i class="fas fa-times-circle me-2"></i>
+        <strong>Gagal!</strong> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["Warning"] != null)
+{
+    <div class="alert alert-warning alert-dismissible fade show custom-alert" role="alert" style="border-left-color: var(--warning-color); background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%); color: #856404;">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <strong>Peringatan!</strong> @TempData["Warning"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="content-header">
+    <div class="page-title">
+        <h1><i class="fas fa-tools me-3"></i>Daftar Mesin Rusak</h1>
+        <p class="text-muted">Menunggu Penjadwalan Maintenance</p>
+    </div>
+</div>
+
+<div class="content-card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-list me-2"></i>Daftar Laporan Kerusakan</h5>
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" class="form-control" placeholder="Cari mesin..." />
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table custom-table">
+            <thead>
+                <tr>
+                    <th><i class="fas fa-cog me-2"></i>Nama Mesin</th>
+                    <th><i class="fas fa-industry me-2"></i>Lini Produksi</th>
+                    <th><i class="fas fa-exclamation-triangle me-2"></i>Deskripsi Kerusakan</th>
+                    <th><i class="fas fa-user-tie me-2"></i>Nama Pelapor</th>
+                    <th><i class="fas fa-calendar me-2"></i>Tanggal Pelaporan</th>
+                    <th><i class="fas fa-wrench me-2"></i>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="machine-info">
+                                    <span class="machine-name">@item.MachineName</span>
+                                </div>
+                            </td>
+                            <td><span class="badge bg-primary">@item.ProductionLineName</span></td>
+                            <td>
+                                <div class="damage-info">
+                                    <span class="damage-text">@item.Description</span>
+                                </div>
+                            </td>
+                            <td>@item.ReporterName</td>
+                            <td>
+                                <div class="date-info">
+                                    <span class="date">@item.ReportDate.ToString("dd-MM-yyyy")</span>
+                                    <span class="time">@item.ReportDate.ToString("HH:mm")</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#scheduleModal-@item.ReportId">
+                                        <i class="fas fa-calendar-plus me-1"></i>Jadwal
+                                    </button>
+                                    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#rejectModal-@item.ReportId">
+                                        <i class="fas fa-times me-1"></i>Tolak
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" class="text-center p-4">Tidak ada laporan kerusakan yang menunggu penjadwalan.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card-footer">
+        <div class="pagination-info">Menampilkan @Model.Count data</div>
+        <nav aria-label="Table pagination">
+            <!-- Pagination logic can be added here if needed -->
+        </nav>
+    </div>
+</div>
+
+@if (Model != null)
+{
+    @foreach (var item in Model)
+    {
+        <div class="modal fade" id="scheduleModal-@item.ReportId" tabindex="-1" aria-labelledby="scheduleModalLabel-@item.ReportId" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content custom-modal">
+                    <form asp-action="ScheduleRepair" asp-controller="Production" method="post">
+                        @Html.AntiForgeryToken()
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="scheduleModalLabel-@item.ReportId">
+                                <i class="fas fa-calendar-plus me-2 text-success"></i>Jadwalkan Perbaikan: @item.MachineName
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" name="ReportId" value="@item.ReportId" />
+                            <div class="mb-3">
+                                <label for="ScheduleDate-@item.ReportId" class="form-label"><i class="fas fa-calendar me-2"></i>Tanggal Perbaikan</label>
+                                <input type="date" name="ScheduleDate" id="ScheduleDate-@item.ReportId" class="form-control" required min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                            </div>
+                            <div class="mb-3">
+                                <label for="Description-@item.ReportId" class="form-label"><i class="fas fa-file-alt me-2"></i>Deskripsi Jadwal Perbaikan</label>
+                                <textarea name="Description" id="Description-@item.ReportId" class="form-control" rows="4" required placeholder="Masukkan deskripsi detail perbaikan yang akan dilakukan..."></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-success"><i class="fas fa-save me-2"></i>Simpan Jadwal</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-2"></i>Batal</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="rejectModal-@item.ReportId" tabindex="-1" aria-labelledby="rejectModalLabel-@item.ReportId" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content custom-modal">
+                    <form asp-action="RejectDamageReport" asp-controller="Production" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="ReportId" value="@item.ReportId" />
+
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title" id="rejectModalLabel-@item.ReportId">
+                                <i class="fas fa-times-circle me-2"></i>Tolak Laporan: @item.MachineName
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Anda akan menolak laporan yang dibuat oleh: <strong>@item.ReporterName</strong></p>
+                            <div class="mb-3">
+                                <label for="RejectionReason-@item.ReportId" class="form-label">Alasan Penolakan</label>
+                                <textarea name="RejectionReason" id="RejectionReason-@item.ReportId" class="form-control" rows="4" required placeholder="Masukkan alasan mengapa laporan ini ditolak..." maxlength="500"></textarea>
+                                <div class="form-text">Alasan ini akan dikirim ke Leader Production.</div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-danger">Tolak Laporan</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const today = new Date().toISOString().split('T')[0];
+            const dateInputs = document.querySelectorAll('input[type="date"][name="ScheduleDate"]');
+            dateInputs.forEach(function(input) {
+                input.setAttribute('min', today);
+            });
+        });
+    </script>
+}

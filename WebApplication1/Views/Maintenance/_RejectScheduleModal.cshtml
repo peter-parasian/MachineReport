@@ -1,0 +1,26 @@
+﻿@model WebApplication1.ViewModels.RejectScheduleInputModel
+
+<form id="rejectScheduleForm" asp-action="RejectSchedule" asp-controller="Maintenance" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="ScheduleId" />
+
+    <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">
+            <i class="fas fa-times-circle me-2"></i>Tolak Jadwal Perbaikan
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+        <p>Anda akan menolak jadwal yang dibuat oleh: <strong>@Model.CreatorName</strong></p>
+        <div class="mb-3">
+            <label asp-for="RejectionReason" class="form-label">Alasan Penolakan</label>
+            <textarea asp-for="RejectionReason" class="form-control" rows="4" required
+                      placeholder="Berikan alasan mengapa jadwal ini ditolak..."></textarea>
+            <span asp-validation-for="RejectionReason" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+        <button type="submit" class="btn btn-danger">Tolak Jadwal</button>
+    </div>
+</form>

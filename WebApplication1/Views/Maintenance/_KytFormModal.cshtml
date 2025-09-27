@@ -1,0 +1,160 @@
+﻿@model WebApplication1.ViewModels.KYTFormViewModel
+
+<form id="kytForm" asp-controller="Maintenance" asp-action="ApproveAndSubmitKyt" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="ScheduleId" id="kyt_schedule_id" />
+    <input type="hidden" asp-for="DangerousMode" id="kyt_dangerous_sum" />
+    <div id="technicianIdsContainer"></div>
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label asp-for="MachineName" class="form-label">Mesin Rusak</label>
+            <input asp-for="MachineName" type="text" class="form-control" id="kyt_machine_name" readonly />
+        </div>
+        <div class="col-md-6">
+            <label asp-for="ProductionLineName" class="form-label">Lini Produksi</label>
+            <input asp-for="ProductionLineName" type="text" class="form-control" id="kyt_lini_name" readonly />
+        </div>
+
+        <div class="col-md-6">
+            <label asp-for="DamageDescription" class="form-label">Deskripsi Kerusakan (dari Leader Produksi)</label>
+            <textarea asp-for="DamageDescription" class="form-control" id="kyt_description" rows="3" readonly></textarea>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="ReporterName" class="form-label">Leader Produksi (Pelapor)</label>
+            <input asp-for="ReporterName" type="text" class="form-control" id="kyt_reporter_name" readonly />
+        </div>
+        <div class="col-md-3">
+            <label asp-for="FilledByName" class="form-label">Leader Maintenance (Pengisi KYT)</label>
+            <input asp-for="FilledByName" type="text" class="form-control" id="kyt_filled_by_name" readonly />
+        </div>
+
+        <hr class="my-4">
+
+        <div class="col-12">
+            <label class="form-label">Pilih Teknisi Maintenance</label>
+            <div class="input-group mb-3">
+                <select id="availableTechniciansSelect" class="form-select">
+                    <option value="" selected disabled>--- Pilih Teknisi ---</option>
+                </select>
+                <button class="btn btn-outline-secondary" type="button" id="addTechnicianBtn">Tambah</button>
+            </div>
+            <span asp-validation-for="TechnicianIds" class="text-danger d-block mb-2"></span>
+            <label class="form-label">Teknisi yang Ditugaskan:</label>
+            <div id="addedTechniciansList" class="list-group list-group-flush border rounded p-2" style="min-height: 50px;">
+                <small id="noTechnicianSelectedMsg" class="text-muted">Belum ada teknisi yang ditambahkan.</small>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <label asp-for="Analysis" class="form-label">Crash Analysis</label>
+            <textarea asp-for="Analysis" class="form-control" id="potential_hazard" rows="3"></textarea>
+            <span asp-validation-for="Analysis" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="Action" class="form-label">Action Needed</label>
+            <textarea asp-for="Action" class="form-control" id="kyt_action" rows="3"></textarea>
+            <span asp-validation-for="Action" class="text-danger"></span>
+        </div>
+
+        <hr class="my-4">
+
+        <div class="col-12">
+            <h4>Dangerous Mode</h4>
+            <span asp-validation-for="DangerousMode" class="text-danger d-block mb-2"></span>
+            <div class="d-flex flex-wrap gap-3">
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input danger-checkbox" value="1" id="danger1">
+                    <label class="form-check-label" for="danger1">Tertabrak / Terjatuh</label>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input danger-checkbox" value="2" id="danger2">
+                    <label class="form-check-label" for="danger2">Sengatan Listrik</label>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input danger-checkbox" value="4" id="danger3">
+                    <label class="form-check-label" for="danger3">Terpental</label>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input danger-checkbox" value="8" id="danger4">
+                    <label class="form-check-label" for="danger4">Benda Berat 1</label>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input danger-checkbox" value="16" id="danger5">
+                    <label class="form-check-label" for="danger5">Benda Berat 2</label>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input danger-checkbox" value="32" id="danger6">
+                    <label class="form-check-label" for="danger6">Kandungan Kimia</label>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input danger-checkbox" value="64" id="danger7">
+                    <label class="form-check-label" for="danger7">Terjepit / Terlilit</label>
+                </div>
+            </div>
+        </div>
+
+        <hr class="my-4">
+
+        <div class="col-12"><h4>Prepare</h4></div>
+        <div class="col-md-4">
+            <label asp-for="PrepareProcess" class="form-label">Process</label>
+            <textarea asp-for="PrepareProcess" class="form-control" id="prepare_process" rows="3"></textarea>
+            <span asp-validation-for="PrepareProcess" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="PreparePrediction" class="form-label">Danger Prediction</label>
+            <textarea asp-for="PreparePrediction" class="form-control" id="prepare_prediction" rows="3"></textarea>
+            <span asp-validation-for="PreparePrediction" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="PrepareControl" class="form-label">Tindakan Pengendalian</label>
+            <textarea asp-for="PrepareControl" class="form-control" id="prepare_action" rows="3"></textarea>
+            <span asp-validation-for="PrepareControl" class="text-danger"></span>
+        </div>
+
+        <hr class="my-4">
+
+        <div class="col-12"><h4>Main</h4></div>
+        <div class="col-md-4">
+            <label asp-for="MainProcess" class="form-label">Process</label>
+            <textarea asp-for="MainProcess" class="form-control" id="main_process" rows="3"></textarea>
+            <span asp-validation-for="MainProcess" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="MainPrediction" class="form-label">Danger Prediction</label>
+            <textarea asp-for="MainPrediction" class="form-control" id="main_prediction" rows="3"></textarea>
+            <span asp-validation-for="MainPrediction" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="MainControl" class="form-label">Tindakan Pengendalian</label>
+            <textarea asp-for="MainControl" class="form-control" id="main_action" rows="3"></textarea>
+            <span asp-validation-for="MainControl" class="text-danger"></span>
+        </div>
+
+        <hr class="my-4">
+
+        <div class="col-12"><h4>Confirm</h4></div>
+        <div class="col-md-4">
+            <label asp-for="ConfirmProcess" class="form-label">Process</label>
+            <textarea asp-for="ConfirmProcess" class="form-control" id="confirm_process" rows="3"></textarea>
+            <span asp-validation-for="ConfirmProcess" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="ConfirmPrediction" class="form-label">Danger Prediction</label>
+            <textarea asp-for="ConfirmPrediction" class="form-control" id="confirm_prediction" rows="3"></textarea>
+            <span asp-validation-for="ConfirmPrediction" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="ConfirmControl" class="form-label">Tindakan Pengendalian</label>
+            <textarea asp-for="ConfirmControl" class="form-control" id="confirm_action" rows="3"></textarea>
+            <span asp-validation-for="ConfirmControl" class="text-danger"></span>
+        </div>
+    </div>
+
+    <hr class="my-4">
+
+    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+        <button type="submit" class="btn btn-success">Simpan & Setujui</button>
+    </div>
+</form>
