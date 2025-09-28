@@ -6,7 +6,7 @@ Aplikasi Web ASP.NET MVC untuk Pelaporan dan Penjadwalan Perawatan Mesin di Ling
 
 ## 📖 Tentang Proyek
 
-Proyek ini adalah aplikasi web enterprise yang dibangun menggunakan **ASP.NET MVC (.NET 9)** untuk mengelola alur kerja pelaporan kerusakan, penjadwalan perbaikan, dan analisis keselamatan (KYT - Kiken Yochi Training) untuk mesin produksi. Sistem ini dirancang untuk mendigitalisasi dan mengefisiensikan komunikasi antara departemen Produksi dan Maintenance.
+Proyek ini adalah aplikasi web yang dibangun menggunakan **ASP.NET MVC (.NET 9)** untuk mengelola alur kerja pelaporan kerusakan, penjadwalan perbaikan, dan analisis keselamatan (KYT - Kiken Yochi Training) untuk mesin produksi. Sistem ini dirancang untuk mendigitalisasi dan mengefisiensikan komunikasi antara departemen Produksi dan Maintenance.
 
 Aplikasi ini memiliki sistem otentikasi berbasis peran (Role-Based Access Control) untuk memastikan setiap pengguna memiliki akses dan fungsionalitas yang sesuai dengan tanggung jawabnya.
 
@@ -84,7 +84,7 @@ Untuk menjalankan proyek ini di lingkungan lokal, ikuti langkah-langkah berikut:
 ### Prasyarat
 
 -   .NET 9 SDK atau versi yang lebih baru.
--   SQL Server (misalnya, Edisi Express atau Developer).
+-   SQL Server
 -   IDE seperti Visual Studio 2022 atau Visual Studio Code.
 
 ### Langkah-langkah
@@ -131,6 +131,8 @@ Untuk menjalankan proyek ini di lingkungan lokal, ikuti langkah-langkah berikut:
 
 <img width="1919" height="950" alt="Screenshot 2025-09-27 160926" src="https://github.com/user-attachments/assets/c34e42b6-37c0-456d-9fd9-3d52f9d55809" />
 
+
 <img width="1563" height="633" alt="Screenshot 2025-09-27 014735" src="https://github.com/user-attachments/assets/4ead864c-6551-4a35-9941-5fed5660bd41" />
+
 
 Untuk informasi lebih lanjut dan visualisasi fitur, lihat dokumentasi lengkap di [Dokumentasi Website SPMR](https://my-project-3.gitbook.io/dokumentasi_website/).
